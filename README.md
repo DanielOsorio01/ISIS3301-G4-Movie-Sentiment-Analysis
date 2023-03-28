@@ -2,5 +2,5 @@
 
 ## Integrantes
 * Ángela Vargas
-* Juan Martin Santos
+* Juan Martin Santos - 202013610
 * Daniel Osorio - 202022996
