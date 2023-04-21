@@ -20,5 +20,9 @@ class cleanText(BaseEstimator, TransformerMixin):
         return self.clean(X)
     
     def clean(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.apply(lambda x: ' '.join([self.snowball_stemmer.stem(word.lower()) for word in wordpunct_tokenize(x) if (word.isalpha() and word.lower() not in self.stop_words)]))
+        df["review_es"] = df["review_es"].apply(lambda x: ' '.join([
+            self.snowball_stemmer.stem(word.lower())
+            for word in wordpunct_tokenize(x) 
+            if (word.isalpha() and word.lower() not in self.stop_words)
+            ]))
         return df

@@ -1,6 +1,5 @@
 from typing import List
 import pandas as pd
-from database import get_db
 import dataModel
 from fastapi import FastAPI, Depends
 from models import Review
@@ -8,6 +7,7 @@ from prediction_model import PredictionModel
 from schemas import CreateReview
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
+from database import engine, Base, session
 
 app = FastAPI()
 
@@ -20,6 +20,9 @@ app.add_middleware(
       allow_methods=["*"],
       allow_headers=["*"],
 )
+
+Base.metadata.create_all(engine)
+db = session
 
 @app.on_event("startup")
 async def startup_event():
@@ -38,7 +41,7 @@ def make_predictions(dataModel: list[dataModel.DataModel]):
    return results.tolist()
 
 @app.post("/postreview")
-def create_review(review: CreateReview, db: Session = Depends(get_db)):
+def create_review(review: CreateReview):
    gotclass = prediction_model.make_prediction(pd.DataFrame([review.review_es], columns=['review_es']))
    if gotclass[0] == 1:
       gotclass = 'Positivo'
@@ -51,21 +54,21 @@ def create_review(review: CreateReview, db: Session = Depends(get_db)):
    return {}
 
 @app.get("/reviews", response_model=List[dataModel.Review])
-def show_reviews(db: Session = Depends(get_db)):
+def show_reviews():
    reviews = db.query(Review).all()
    return reviews
 
 @app.get("/reviews/{review_id}", response_model=dataModel.Review)
-def show_review(review_id: int, db: Session = Depends(get_db)):
+def show_review(review_id: int):
    review = db.query(Review).filter(Review.id == review_id).first()
    return review
 
 @app.get("/reviews/negative", response_model=List[dataModel.Review])
-def show_negative_reviews(db: Session = Depends(get_db)):
+def show_negative_reviews():
    reviews = db.query(Review).filter(Review.classification == 'Negativo').all()
    return reviews
 
 @app.get("/reviews/positive", response_model=List[dataModel.Review])
-def show_positive_reviews(db: Session = Depends(get_db)):
+def show_positive_reviews():
    reviews = db.query(Review).filter(Review.classification == 'Positivo').all()
    return reviews
