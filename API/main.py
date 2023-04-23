@@ -62,13 +62,3 @@ def show_reviews():
 def show_review(review_id: int):
    review = db.query(Review).filter(Review.id == review_id).first()
    return review
-
-@app.get("/reviews/negative", response_model=List[dataModel.Review])
-def show_negative_reviews():
-   reviews = db.query(Review).filter(Review.classification == 'Negativo').all()
-   return reviews
-
-@app.get("/reviews/positive", response_model=List[dataModel.Review])
-def show_positive_reviews():
-   reviews = db.query(Review).filter(Review.classification == 'Positivo').all()
-   return reviews
