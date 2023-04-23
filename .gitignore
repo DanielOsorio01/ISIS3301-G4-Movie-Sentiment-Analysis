@@ -1,5 +1,5 @@
 #folders
-data/
+data/*.xlsx
 
 #files
 Proyecto_analítica de textos_202310.pdf
