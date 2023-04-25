@@ -70,11 +70,13 @@ def create_review(review: CreateReview):
    #TODO: return the review created
    return {}
 
+# Esta ruta permite mostrar todas las reviews de la base de datos
 @app.get("/reviews", response_model=List[dataModel.Review])
 def show_reviews():
    reviews = db.query(Review).all()
    return reviews
 
+# Esta ruta permite mostrar una review en especifico de la base de datos
 @app.get("/reviews/{review_id}", response_model=dataModel.Review)
 def show_review(review_id: int):
    review = db.query(Review).filter(Review.id == review_id).first()
