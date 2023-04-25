@@ -9,10 +9,18 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base, session
 
-app = FastAPI()
 
+"""
+Este es el archivo principal de la API, en este archivo se definen las rutas
+y los métodos que se van a utilizar al momento de ejecutarse el API.
+"""
+
+# Se crea la instancia de FastAPI
+app = FastAPI()
+# Se definen los origenes permitidos para la API, en este caso se permite que cualquier origen se conecte a la API
 origins = ["*"]
 
+# Se agrega el middleware de CORS para permitir que cualquier origen se conecte a la API
 app.add_middleware(
       CORSMiddleware,
       allow_origins=origins,
@@ -21,18 +29,23 @@ app.add_middleware(
       allow_headers=["*"],
 )
 
+# Se crea la base de datos y se crea la sesión de la base de datos
 Base.metadata.create_all(engine)
+# Se crea la varibale para acceder a la base de datos
 db = session
 
+# Se crea la variable que contiene el modelo de predicción y lo inicializa
 @app.on_event("startup")
 async def startup_event():
    global prediction_model
    prediction_model = PredictionModel()
 
+# La primera ruta es predefinida para mostrar un mensaje de bienvenida
 @app.get("/")
 def read_root():
    return {"Hello": "World"}
 
+# Esta ruta permite realizar una prediccion de una entrada de texto
 @app.post("/predict")
 def make_predictions(dataModel: list[dataModel.DataModel]):
    df = pd.DataFrame(x.dict() for x in dataModel)
@@ -40,17 +53,21 @@ def make_predictions(dataModel: list[dataModel.DataModel]):
    results = prediction_model.make_prediction(df)
    return results.tolist()
 
+# Esta ruta permite crear una nueva review en la base de datos
 @app.post("/postreview")
 def create_review(review: CreateReview):
+   # Se realiza la prediccion de la review recibida en la ruta
    gotclass = prediction_model.make_prediction(pd.DataFrame([review.review_es], columns=['review_es']))
+   # Se verifica si la prediccion es positiva o negativa
    if gotclass[0] == 1:
       gotclass = 'Positivo'
    else:
       gotclass = 'Negativo'
-
+   # Se crea la review en la base de datos y se guarda
    to_create = Review(review_es=review.review_es, classification=gotclass)
    db.add(to_create)
    db.commit()
+   #TODO: return the review created
    return {}
 
 @app.get("/reviews", response_model=List[dataModel.Review])
