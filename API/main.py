@@ -1,26 +1,83 @@
-from typing import Optional
-from fastapi import FastAPI
-import dataModel
+from typing import List
 import pandas as pd
-from joblib import load
+import dataModel
+from fastapi import FastAPI, Depends
+from models import Review
+from prediction_model import PredictionModel
+from schemas import CreateReview
+from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
+from database import engine, Base, session
 
+
+"""
+Este es el archivo principal de la API, en este archivo se definen las rutas
+y los métodos que se van a utilizar al momento de ejecutarse el API.
+"""
+
+# Se crea la instancia de FastAPI
 app = FastAPI()
+# Se definen los origenes permitidos para la API, en este caso se permite que cualquier origen se conecte a la API
+origins = ["*"]
 
+# Se agrega el middleware de CORS para permitir que cualquier origen se conecte a la API
+app.add_middleware(
+      CORSMiddleware,
+      allow_origins=origins,
+      allow_credentials=True,
+      allow_methods=["*"],
+      allow_headers=["*"],
+)
+
+# Se crea la base de datos y se crea la sesión de la base de datos
+Base.metadata.create_all(engine)
+# Se crea la varibale para acceder a la base de datos
+db = session
+
+# Se crea la variable que contiene el modelo de predicción y lo inicializa
+@app.on_event("startup")
+async def startup_event():
+   global prediction_model
+   prediction_model = PredictionModel()
+
+# La primera ruta es predefinida para mostrar un mensaje de bienvenida
 @app.get("/")
 def read_root():
    return {"Hello": "World"}
 
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-   return {"item_id": item_id, "q": q}
-
+# Esta ruta permite realizar una prediccion de una entrada de texto
 @app.post("/predict")
-def make_predictions(dataModel: dataModel):
-    df = pd.DataFrame(dataModel.dict(), columns=dataModel.dict().keys(), index=[0])
-    df.columns = dataModel.columns()
-    model = load("assets/modelo.joblib")
-    result = model.predict(df)
-    return result
+def make_predictions(dataModel: list[dataModel.DataModel]):
+   df = pd.DataFrame(x.dict() for x in dataModel)
+   df.columns = dataModel[0].columns()
+   results = prediction_model.make_prediction(df)
+   return results.tolist()
 
+# Esta ruta permite crear una nueva review en la base de datos
+@app.post("/postreview")
+def create_review(review: CreateReview):
+   # Se realiza la prediccion de la review recibida en la ruta
+   gotclass = prediction_model.make_prediction(pd.DataFrame([review.review_es], columns=['review_es']))
+   # Se verifica si la prediccion es positiva o negativa
+   if gotclass[0] == 1:
+      gotclass = 'Positivo'
+   else:
+      gotclass = 'Negativo'
+   # Se crea la review en la base de datos y se guarda
+   to_create = Review(review_es=review.review_es, classification=gotclass)
+   db.add(to_create)
+   db.commit()
+   #TODO: return the review created
+   return {}
 
+# Esta ruta permite mostrar todas las reviews de la base de datos
+@app.get("/reviews", response_model=List[dataModel.Review])
+def show_reviews():
+   reviews = db.query(Review).all()
+   return reviews
+
+# Esta ruta permite mostrar una review en especifico de la base de datos
+@app.get("/reviews/{review_id}", response_model=dataModel.Review)
+def show_review(review_id: int):
+   review = db.query(Review).filter(Review.id == review_id).first()
+   return review

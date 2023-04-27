@@ -4,3 +4,6 @@
 * Ángela Vargas - 201717106
 * Juan Martin Santos - 202013610
 * Daniel Osorio - 202022996
+
+Para el despliegue de la API se deben seguir los siguientes pasos:
+
