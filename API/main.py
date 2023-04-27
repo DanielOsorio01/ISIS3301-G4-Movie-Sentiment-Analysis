@@ -1,7 +1,7 @@
 from typing import List
 import pandas as pd
 import dataModel
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from models import Review
 from prediction_model import PredictionModel
 from schemas import CreateReview
