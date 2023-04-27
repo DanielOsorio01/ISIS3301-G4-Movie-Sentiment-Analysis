@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>API Demo</title>
+  </head>
+  <body>
+    <h1>Welcome to the API For Review Sentiment Analysis</h1>
+    <h2>Integrantes: Ángela Vargas, Juan Martin Santos y Daniel Osorio</h2>
+    <form action="/predict" method="post">
+      <label for="review">Enter your review:</label><br>
+      <textarea id="review" name="review" rows="5" cols="50"></textarea><br>
+      <input type="submit" value="Submit">
+    </form>
+    <hr>
+    <h2>Reviews</h2>
+    <ul>
+      {% for review in reviews %}
+        <li>{{ review.review_es }} - {{ review.classification }}</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>

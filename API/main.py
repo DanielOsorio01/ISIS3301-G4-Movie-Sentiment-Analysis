@@ -8,6 +8,7 @@ from schemas import CreateReview
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base, session
+from starlette.responses import FileResponse 
 
 
 """
@@ -43,7 +44,7 @@ async def startup_event():
 # La primera ruta es predefinida para mostrar un mensaje de bienvenida
 @app.get("/")
 def read_root():
-   return {"Hello": "World"}
+   return FileResponse("index.html")
 
 # Esta ruta permite realizar una prediccion de una entrada de texto
 @app.post("/predict")
