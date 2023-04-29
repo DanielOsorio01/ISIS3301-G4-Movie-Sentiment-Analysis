@@ -25,13 +25,13 @@
     // Get the review text
     const review = document.getElementById("review").value;
     // Send the review to the API
-    fetch("http://localhost:8000/predict", {
+    fetch("http://localhost:8000/postreview", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify(
-        [{review_es: review}]
+        {review_es: review}
       )
     })
       .then(response => response.json())
