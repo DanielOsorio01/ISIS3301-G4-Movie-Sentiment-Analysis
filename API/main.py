@@ -8,7 +8,8 @@ from schemas import CreateReview
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base, session
-from starlette.responses import FileResponse 
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse
 
 
 """
@@ -65,11 +66,12 @@ def create_review(review: CreateReview):
    else:
       gotclass = 'Negativo'
    # Se crea la review en la base de datos y se guarda
-   to_create = Review(review_es=review.review_es, classification=gotclass)
-   db.add(to_create)
+   reviewCreated = Review(review_es=review.review_es, classification=gotclass)
+   db.add(reviewCreated)
    db.commit()
-   #TODO: return the review created
-   return {}
+   response = {"id": reviewCreated.id, "body": reviewCreated.review_es, "sentiment": reviewCreated.classification}
+   response = jsonable_encoder(response)
+   return JSONResponse(content=response)
 
 # Esta ruta permite mostrar todas las reviews de la base de datos
 @app.get("/reviews", response_model=List[dataModel.Review])
