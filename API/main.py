@@ -3,7 +3,7 @@ import pandas as pd
 import dataModel
 from fastapi import FastAPI, Depends
 from models import Review
-from prediction_model import PredictionModel
+from prediction_model import make_prediction
 from schemas import CreateReview
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,12 +36,6 @@ Base.metadata.create_all(engine)
 # Se crea la varibale para acceder a la base de datos
 db = session
 
-# Se crea la variable que contiene el modelo de predicción y lo inicializa
-@app.on_event("startup")
-async def startup_event():
-   global prediction_model
-   prediction_model = PredictionModel()
-
 # La primera ruta es predefinida para mostrar un mensaje de bienvenida
 @app.get("/")
 def read_root():
@@ -52,14 +46,15 @@ def read_root():
 def make_predictions(dataModel: list[dataModel.DataModel]):
    df = pd.DataFrame(x.dict() for x in dataModel)
    df.columns = dataModel[0].columns()
-   results = prediction_model.make_prediction(df)
+   results = make_prediction(df)
    return results.tolist()
 
 # Esta ruta permite crear una nueva review en la base de datos
 @app.post("/postreview")
 def create_review(review: CreateReview):
    # Se realiza la prediccion de la review recibida en la ruta
-   gotclass = prediction_model.make_prediction(pd.DataFrame([review.review_es], columns=['review_es']))
+   gotclass = make_prediction(review.review_es)
+   print (gotclass)
    # Se verifica si la prediccion es positiva o negativa
    if gotclass[0] == 1:
       gotclass = 'Positivo'
@@ -84,3 +79,10 @@ def show_reviews():
 def show_review(review_id: int):
    review = db.query(Review).filter(Review.id == review_id).first()
    return review
+
+# Esta ruta permite eliminar una review en especifico de la base de datos
+@app.delete("/delete")
+def delete_reviews():
+    db.query(Review).delete()
+    db.commit()
+    return {"message": "All reviews deleted"}
