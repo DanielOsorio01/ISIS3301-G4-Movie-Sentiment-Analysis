@@ -1,6 +1,6 @@
-import pickle
 from cleanText import cleanText
 import joblib as jb
+import pandas as pd
 
 """
 CLase que contiene el modelo de prediccion, este modelo para que funcione
@@ -9,13 +9,10 @@ del modelo y la clase que usamos para llevar las palabras a su raiz y eliminar
 las palabras que no aportan informacion al modelo (cleanText).
 """
 
-class PredictionModel:
-    # Constructor de la clase en el que se importa el modelo y el vectorizador, cleanText esta en los imports
-    def __init__(self):
-        self.model = pickle.load(open('./data/prediccion_reviews.pkl', 'rb'))
-        self.vectorizer = jb.load('./data/count_vectorizer.pkl')
-        
-    # Metodo que se encarga de aplicar las transformaciones necesarias al texto de entrada y realiza la prediccion
-    def make_prediction(self, data):
-        result = self.model.predict(data)
-        return result
+def make_prediction(data):
+    model = jb.load(open('./data/prediccion_reviews.pkl', 'rb'))
+    data = [data]
+    data = pd.DataFrame({"review_es": data})
+    result = model.predict(data["review_es"])
+    print(result)
+    return result
