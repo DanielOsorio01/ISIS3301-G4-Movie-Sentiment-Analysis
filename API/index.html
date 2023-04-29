@@ -1,22 +1,55 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>API Demo</title>
-  </head>
-  <body>
-    <h1>Welcome to the API For Review Sentiment Analysis</h1>
-    <h2>Integrantes: Ángela Vargas, Juan Martin Santos y Daniel Osorio</h2>
-    <form action="/predict" method="post">
-      <label for="review">Enter your review:</label><br>
-      <textarea id="review" name="review" rows="5" cols="50"></textarea><br>
-      <input type="submit" value="Submit">
-    </form>
-    <hr>
-    <h2>Reviews</h2>
-    <ul>
-      {% for review in reviews %}
-        <li>{{ review.review_es }} - {{ review.classification }}</li>
-      {% endfor %}
-    </ul>
-  </body>
+
+<head>
+  <title>API Demo</title>
+</head>
+
+<body>
+  <h1>Welcome to the API For Movie Review Sentiment Analysis</h1>
+  <h2>Integrantes: Ángela Vargas, Juan Martin Santos y Daniel Osorio</h2>
+  <label for="review">Enter your review:</label>
+  <br>
+  <textarea id="review" name="review" rows="5" cols="50"></textarea>
+  <br>
+  <input id="btnSubmit" type="submit" value="Submit">
+  <hr>
+  <h2>Reviews</h2>
+  <div id="reviews"></div>
+</body>
+
+<script>
+  // Get the submit button and add an event listener for when it is clicked
+  const btnSubmit = document.getElementById("btnSubmit");
+  btnSubmit.addEventListener("click", () => {
+    // Get the review text
+    const review = document.getElementById("review").value;
+    // Send the review to the API
+    fetch("http://localhost:8000/predict", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(
+        [{review_es: review}]
+      )
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Get the reviews div
+        const reviews = document.getElementById("reviews");
+        // Create a new div for the review
+        const reviewDiv = document.createElement("div");
+        // Add the review text to the div
+        reviewDiv.innerHTML = review;
+        console.log(data);
+        // Add the review sentiment to the div
+        reviewDiv.innerHTML += `<br><strong>Sentiment: ${data.sentiment}</strong>`;
+        // Add the review div to the reviews div
+        reviews.appendChild(reviewDiv);
+      });
+  });
+
+</script>
+
 </html>
