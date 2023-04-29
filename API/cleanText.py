@@ -28,9 +28,9 @@ class cleanText(BaseEstimator, TransformerMixin):
         return self.clean(X)
     
     # Metodo que se encarga de aplicar las transformaciones necesarias al texto de entrada
-    def clean(self, df: pd.DataFrame) -> pd.DataFrame:
+    def clean(self, df):
         # Elimina las palabras que no aportan informacion al modelo y las lleva a su raiz
-        df["review_es"] = df["review_es"].apply(lambda x: ' '.join([
+        df = df.apply(lambda x: ' '.join([
             self.snowball_stemmer.stem(word.lower())
             for word in wordpunct_tokenize(x) 
             if (word.isalpha() and word.lower() not in self.stop_words)
