@@ -1,7 +1,7 @@
 from typing import List
 import pandas as pd
 import dataModel
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from models import Review
 from prediction_model import make_prediction
 from schemas import CreateReview
@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base, session
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 
 
 """
@@ -39,7 +39,7 @@ db = session
 # La primera ruta es predefinida para mostrar un mensaje de bienvenida
 @app.get("/")
 def read_root():
-   return {"Hello": "World"}
+   return FileResponse("index.html")
 
 # Esta ruta permite realizar una prediccion de una entrada de texto
 @app.post("/predict")
