@@ -12,7 +12,13 @@
   <br>
   <textarea id="review" name="review" rows="5" cols="50"></textarea>
   <br>
-  <input id="btnSubmit" type="submit" value="Submit">
+  <input id="btnSubmit" type="submit" value="Clasificar">
+
+  <h1>Clasificar comentarios</h1>
+  <label for="file">Selecciona un archivo:</label>
+  <input type="file" id="file" name="file"><br><br>
+  <input id="btnClasificar" type="submit" value="Clasificar comentarios">
+  <p id="fileError" style="color: red;"></p>
   <hr>
   <h2>Reviews</h2>
   <div id="reviews"></div>
@@ -21,6 +27,8 @@
 <script>
   // Get the submit button and add an event listener for when it is clicked
   const btnSubmit = document.getElementById("btnSubmit");
+  // Get the clasificar comentarios button and add an event listener for when it is clicked
+  const btnClasificar = document.getElementById("btnClasificar");
   btnSubmit.addEventListener("click", () => {
     // Get the review text
     const review = document.getElementById("review").value;
@@ -42,13 +50,78 @@
         const reviewDiv = document.createElement("div");
         // Add the review text to the div
         reviewDiv.innerHTML = review;
-        console.log(data);
         // Add the review sentiment to the div
-        reviewDiv.innerHTML += `<br><strong>Sentiment: ${data.sentiment}</strong>`;
+        reviewDiv.innerHTML += `<br><strong>Sentimiento: ${data.sentiment}</strong>`;
         // Add the review div to the reviews div
         reviews.appendChild(reviewDiv);
       });
   });
+  btnClasificar.addEventListener("click", () => {
+    // Clear the file error
+    document.getElementById("fileError").textContent = "";
+    // Check if the file is selected
+    if (document.getElementById("file").files.length == 0) {
+      // Write below the file input
+      document.getElementById("fileError").textContent = "Por favor selecciona un archivo";
+      return;
+    }
+    // Get the file
+    const file = document.getElementById("file").files[0];
+    // Check if the file is a .csv file
+    if (file.name.split(".").pop() != "csv") {
+      // Write below the file input
+      document.getElementById("fileError").textContent = "Por favor selecciona un archivo .csv";
+      return;
+    }
+    // Read the file line by line and add each line to the reviews array
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      // Get the file content
+      const fileContent = e.target.result;
+      // Split the file content by line
+      const fileLines = fileContent.split("\n");
+      // Create an array for the reviews
+      const reviewsArray = [];
+      // Add each line to the reviews array
+      fileLines.forEach(line => {
+        // Add the line to the reviews array
+        reviewsArray.push(line);
+      });
+      // Remove the first element of the array (the header)
+      reviewsArray.shift();
+      // Send the reviews to the API
+      fetch("http://localhost:8000/postreviews", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(
+          {reviews_es: reviewsArray}
+        )
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Get the reviews div
+          const reviews = document.getElementById("reviews");
+          // Clear the reviews div
+          reviews.innerHTML = "";
+          // Create a new div for each review
+          data.forEach(review => {
+            // Create a new div for the review
+            const reviewDiv = document.createElement("div");
+            // Add the review text to the div
+            reviewDiv.innerHTML = review.review_es;
+            // Add the review sentiment to the div
+            reviewDiv.innerHTML += `<br><strong>Sentimiento: ${review.sentiment}</strong>`;
+            // Add the review div to the reviews div
+            reviews.appendChild(reviewDiv);
+          });
+        });
+    };
+    reader.readAsText(file);
+
+  });
+
 
 </script>
 

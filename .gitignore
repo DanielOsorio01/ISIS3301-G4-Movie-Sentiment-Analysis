@@ -1,5 +1,7 @@
 #folders
 data/*.xlsx
+__pycache__/
 
 #files
 Proyecto_analítica de textos_202310.pdf
+aplicacion.sqlite
