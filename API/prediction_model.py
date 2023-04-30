@@ -14,5 +14,4 @@ def make_prediction(data):
     data = [data]
     data = pd.DataFrame({"review_es": data})
     result = model.predict(data["review_es"])
-    print(result)
     return result
