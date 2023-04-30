@@ -73,22 +73,21 @@
       document.getElementById("fileError").textContent = "Por favor selecciona un archivo .csv";
       return;
     }
-    // Read the file line by line and add each line to the reviews array
+    // Read the file, save the reviews into an array and send them to the API
     const reader = new FileReader();
-    reader.onload = function (e) {
-      // Get the file content
-      const fileContent = e.target.result;
-      // Split the file content by line
-      const fileLines = fileContent.split("\n");
-      // Create an array for the reviews
-      const reviewsArray = [];
-      // Add each line to the reviews array
-      fileLines.forEach(line => {
-        // Add the line to the reviews array
-        reviewsArray.push(line);
-      });
-      // Remove the first element of the array (the header)
-      reviewsArray.shift();
+    reader.onload = () => {
+      // Get the reviews
+      const reviews = reader.result.split("\n");
+      // Remove the first element (the header)
+      reviews.shift();
+      // Remove the last element (the empty element)
+      reviews.pop();
+      // Transform the reviews into a review format
+      for (let i = 0; i < reviews.length; i++) {
+        // Convert the review into {review_es: review}
+        reviews[i] = {review_es: reviews[i].replace("\r", "").replace("\"", ")")};
+      }
+      console.log(reviews);
       // Send the reviews to the API
       fetch("http://localhost:8000/postreviews", {
         method: "POST",
@@ -96,26 +95,24 @@
           "Content-Type": "application/json"
         },
         body: JSON.stringify(
-          {reviews_es: reviewsArray}
+          reviews
         )
       })
         .then(response => response.json())
         .then(data => {
           // Get the reviews div
-          const reviews = document.getElementById("reviews");
-          // Clear the reviews div
-          reviews.innerHTML = "";
-          // Create a new div for each review
-          data.forEach(review => {
+          const reviewsDiv = document.getElementById("reviews");
+          // For each review
+          for(let i = 0; i < data.length; i++) {
             // Create a new div for the review
             const reviewDiv = document.createElement("div");
             // Add the review text to the div
-            reviewDiv.innerHTML = review.review_es;
+            reviewDiv.innerHTML = data[i].body;
             // Add the review sentiment to the div
-            reviewDiv.innerHTML += `<br><strong>Sentimiento: ${review.sentiment}</strong>`;
+            reviewDiv.innerHTML += `<br><strong>Sentimiento: ${data[i].sentiment}</strong>`;
             // Add the review div to the reviews div
-            reviews.appendChild(reviewDiv);
-          });
+            reviewsDiv.appendChild(reviewDiv);
+          }
         });
     };
     reader.readAsText(file);
