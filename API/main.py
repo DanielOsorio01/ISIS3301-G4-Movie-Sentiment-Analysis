@@ -41,14 +41,6 @@ db = session
 def read_root():
    return {"Hello": "World"}
 
-# Esta ruta permite realizar una prediccion de una entrada de texto
-@app.post("/predict")
-def make_predictions(dataModel: list[dataModel.DataModel]):
-   df = pd.DataFrame(x.dict() for x in dataModel)
-   df.columns = dataModel[0].columns()
-   results = make_prediction(df)
-   return results.tolist()
-
 # Esta ruta permite crear una nueva review en la base de datos
 @app.post("/postreview")
 def create_review(review: CreateReview):

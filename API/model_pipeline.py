@@ -1,12 +1,10 @@
 """Codigo para crear el pipeline para el modelo de prediccion
 y exportarlo para su uso en la API"""
 import nltk
-from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import FunctionTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from nltk.tokenize import wordpunct_tokenize
-from nltk.stem import SnowballStemmer
 from sklearn.pipeline import Pipeline
 from nltk.corpus import stopwords
 from cleanText import cleanText
@@ -14,14 +12,6 @@ from langdetect import detect
 nltk.download('stopwords')
 import joblib as jb
 import pandas as pd
-
-# Seteamos las stopwords en español
-stop_words = set(stopwords.words('spanish'))
-# Agregamos a las stopwords tambien los signos de puntuacion
-# Se agrega una u a la izquierda para indicar que es un string unicode, sin embargo no es necesario
-stop_words = list(stop_words)
-stop_words.extend([u'.', u'[', ']', u',', u';', u'', u')', u'),', u' ', u'('])
-snowball_stemmer = SnowballStemmer('spanish')
 
 # Funcion para eliminar los comentarios que no esten en es
 def drop_lang(x):
