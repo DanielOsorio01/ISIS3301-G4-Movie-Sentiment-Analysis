@@ -1,0 +1,9 @@
+FROM python
+
+RUN git clone https://github.com/DanielOsorio01/ISIS3301-G4-Movie-Sentiment-Analysis.git
+
+RUN pip install fastapi "uvicorn[standard]" langdetect SQLAlchemy pydantic pandas nltk scikit-learn
+
+WORKDIR ISIS3301-G4-Movie-Sentiment-Analysis/API/
+
+CMD uvicorn main:app --reload
